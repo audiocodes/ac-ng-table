@@ -1,0 +1,75 @@
+<div class="ac-pagination flexRowParent">
+
+    <ng-template [ngTemplateOutlet]="prefixTemplate"></ng-template>
+
+    <div *ngIf="pageSelector && _pageSizeOptions" class="ac-pagination-item flexItem">
+        <div class="items-size-label information-key">Items per page:</div>
+        <ac-input-container class="ac-pagination-select ac-pagination-page-size" [upperPadding]="false" [sideMargin]="false" [displayAsBasic]="true">
+            <ac-single-select bindLabel="value"
+                              [items]="_pageSizeOptions"
+                              [acModel]="_pageSize"
+                              (acModelChange)="onPageSizeChange($event)">
+            </ac-single-select>
+        </ac-input-container>
+    </div>
+
+    <div [hidden]="!showItemDisplay" class="ac-pagination-item ac-pagination-items-display flexItem information-key">
+        <ng-template *ngTemplateOutlet="itemsDisplayTemplate || defaultItemsDisplayTemplate[itemsDisplayType];
+                     context: _totalElements | acFunc : getItemRangeContext : _pageIndex : _pageSize"
+        ></ng-template>
+
+        <ng-template let-totalElements let-pageIndex="pageIndex" let-pageSize="pageSize" #itemsRange>
+            {{totalElements | acFunc : getFromPageElements : pageIndex : pageSize}}
+            -
+            {{totalElements | acFunc : getToPageElements : pageIndex : pageSize}} of {{_totalElements}}
+        </ng-template>
+
+        <ng-template let-totalElements #itemsCount>Displaying {{totalElements}} items</ng-template>
+    </div>
+
+    <div *ngIf="pageSelector" class="ac-pagination-item ac-pagination-page-select flexItem">
+
+        <div *ngIf="selectionLabel" class="information-key">Page number:</div>
+        <ac-input-container class="ac-pagination-select ac-pagination-page" [upperPadding]="false" [displayAsBasic]="true">
+            <ac-single-select *ngIf="pagePicker; else pageIndexTemplate" selectId="pagination"
+                              [selectFirstAfterSort]="false"
+                              [acModel]="_totalElements ? _pageIndex : 1"
+                              [items]="_totalElements | acFunc : getPages : _pageSize : pageValuesMap"
+                              [itemTemplate]="pageSelectTemplate"
+                              [labelTemplate]="pageSelectTemplate"
+                              (acModelChange)="onPageIndexChange($event)">
+            </ac-single-select>
+        </ac-input-container>
+
+        <ng-template #pageIndexTemplate>
+            <span class="ac-pagination-page-index information-key">{{_pageIndex}}</span>
+        </ng-template>
+
+        <ac-button *ngIf="showFirst" class="first_page medium ac-pagination-button" buttonType="icon-button"
+                   (click)="!isFirstPage && onPageIndexChange(1)" [ngDisabled]="isFirstPage">
+            <ac-svg name="first_page" [fillColor]="isFirstPage | acFunc : getButtonStateColor"></ac-svg>
+        </ac-button>
+
+        <ac-button class="previous medium ac-pagination-button" (click)="!isFirstPage && onPageIndexChange(_pageIndex - 1)" buttonType="icon-button"
+                   [ngDisabled]="isFirstPage">
+            <ac-svg name="chevron" [fillColor]="isFirstPage | acFunc : getButtonStateColor"></ac-svg>
+        </ac-button>
+
+        <ac-button class="next medium ac-pagination-button" (click)="!isLastPage && onPageIndexChange(_pageIndex + 1)" buttonType="icon-button"
+                   [ngDisabled]="isLastPage">
+            <ac-svg name="chevron" [fillColor]="isLastPage | acFunc : getButtonStateColor" [mirrorHor]="true"></ac-svg>
+        </ac-button>
+
+        <ac-button *ngIf="showLast" class="last_page medium ac-pagination-button" buttonType="icon-button"
+                   (click)="!isLastPage && onPageIndexChange(getTotalPages(_totalElements, _pageSize))"
+                   [ngDisabled]="isLastPage">
+            <ac-svg name="first_page" [fillColor]="isLastPage | acFunc : getButtonStateColor"
+                    [mirrorHor]="true"></ac-svg>
+        </ac-button>
+    </div>
+
+<!--    <div *ngIf="postfixTemplate" class="ac-pagination-item">-->
+<!--        -->
+<!--    </div>-->
+    <ng-template [ngTemplateOutlet]="postfixTemplate"></ng-template>
+</div>

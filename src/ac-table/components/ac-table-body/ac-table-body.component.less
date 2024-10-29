@@ -1,0 +1,93 @@
+@import "colors.less";
+
+@ac-table-row-selected-background: @selected;
+@ac-table-row-hover-background: @lightBG;
+@ac-table-row-border-color: @lightBG;
+
+:host {
+  line-height: 140%;
+}
+
+tr.body-table-row, tr.expanded-row {
+  position: relative;
+  cursor: pointer;
+  height: 50px;
+
+  &:has(+ .body-table-row) > td {
+    border-bottom: 2px solid @ac-table-row-border-color;
+
+    &:first-child {
+      position: relative;
+    }
+  }
+
+  &:hover {
+    td {
+      background: @ac-table-row-hover-background;
+    }
+
+    &:not(.expanded-row) > :first-child::before {
+      .row-indicator(rgba(@gray, 0.54));
+    }
+  }
+
+  &.selected {
+    position: relative;
+
+    td {
+      background-color: @ac-table-row-selected-background;
+    }
+
+
+    &:not(.expanded-row) > :first-child::before {
+      .row-indicator(@primary);
+    }
+  }
+}
+
+.row-indicator (@color) {
+  content: "";
+  position: absolute;
+  background: @color;
+  width: 3px;
+  height: 100%;
+  z-index: 1;
+  top: 0;
+}
+
+.body-table-cell {
+  padding: 0 10px;
+
+  &.no-padding {
+    padding: 0;
+  }
+}
+
+
+.group {
+  border-bottom: 1px solid @systemBorderDark !important;
+  border-top: 1px solid @systemBorderDark !important;
+  border-right: 1px solid @systemBorderDark !important;
+  font-weight: bold;
+  background-color: @systemBorder !important;
+
+  &:hover {
+    background-color: @hover !important;
+  }
+}
+
+.group-collapse {
+  display: inline-block;
+  margin-right: 10px;
+  margin-left: 3px;
+  width: 7px;
+}
+
+.ac-table-select-row-checkbox {
+  ::ng-deep {
+
+    ac-checkbox {
+      padding: 10px;
+    }
+  }
+}

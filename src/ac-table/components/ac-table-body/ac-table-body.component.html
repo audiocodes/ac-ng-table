@@ -1,0 +1,68 @@
+
+<ng-container *ngIf="!acTableComponent.expandableRows || !acTableComponent.disableVirtualScroll; then virtualScrollBodyTemplate else normalScrollBodyTemplate"></ng-container>
+<ng-template  #normalScrollBodyTemplate>
+    <ng-container *ngFor="let row of rows; trackBy: TrackById" [ngTemplateOutlet]="bodyRowTemplate" [ngTemplateOutletContext]="{$implicit: row}"></ng-container>
+</ng-template>
+<ng-template #virtualScrollBodyTemplate>
+    <ng-container *cdkVirtualFor="let row of rows; trackBy: TrackById" [ngTemplateOutlet]="bodyRowTemplate" [ngTemplateOutletContext]="{$implicit: row}"></ng-container>
+</ng-template>
+
+<ng-template let-row #bodyRowTemplate>
+    <tr class="body-table-row"
+        [class.selected]="!row._groupId && acTableComponent.selection[row.id]"
+        (click)="row._groupId ? acTableComponent.toggleGroupCollapsedState(row) : acTableComponent.selectRow($event, row)"
+        #rowsElementsRef>
+
+        <td *ngFor="let column of columns | acFunc : reduceCells : row; trackBy: acTableService.trackByField"
+            [attr.headers]="column.field"
+            [attr.colspan]="column | acFunc : getRowColSpan: row"
+            [class.group]="row._groupId"
+            [class.left]="column.stickyLeft"
+            #td>
+
+            <div class="table-cell body-table-cell"
+                 [parentForTitle]="td"
+                 [ngClass]="column.cellClass"
+                 (click)="column.onCellClick && column.onCellClick($event, {column, row})"
+                 acLabel
+                 #cell>
+                <ng-template [acTableCellTemplate]="row._groupId ? groupCellTemplate : (column.template || defaultCellTemplate)"
+                             [acTableCell]="cell"
+                             [acTableCellFormatter]="column.formatter"
+                             [acTableCellColumn]="column"
+                             [acTableCellRow]="row"
+                             [acTableCellSelection]="acTableComponent.selection[row.id]"
+                ></ng-template>
+            </div>
+        </td>
+    </tr>
+    <tr *ngIf="acTableComponent.expandableRows && rowsExpansion[row.id]"
+        class="expanded-row"
+        [class.selected]="!row._groupId && acTableComponent.selection[row.id]">
+        <td [attr.colspan]="columns.length">
+            <ng-container [ngTemplateOutlet]="acTableComponent.acTableExpandedRowDirective?.template"
+                          [ngTemplateOutletContext]="{$implicit: row.data}"
+            ></ng-container>
+        </td>
+    </tr>
+</ng-template>
+
+<tr *ngIf="showBufferLoader">
+    <td [attr.colspan]="columns.length">
+        <div *ngIf="!templates?.infiniteScrollBufferLoader else templates.infiniteScrollBufferLoader"
+             style="height: 48px">
+            <ac-progress></ac-progress>
+        </div>
+    </td>
+</tr>
+
+<ng-template let-row="row" let-column="column" #defaultCellTemplate>
+    <ng-container *ngIf="((row | ByStringPipe : column.field) || '') as data">
+        {{ data?.value || data }}
+    </ng-container>
+</ng-template>
+
+<ng-template let-row="row" #groupCellTemplate>
+    <ac-svg class="group-collapse" name="expander" [rotate]="row.isCollapsed ? 0 : 45"></ac-svg>
+    {{ row._groupId + ' (' + acTableComponent.groupedRows[row._groupId]?.length + ' items)' }}
+</ng-template>

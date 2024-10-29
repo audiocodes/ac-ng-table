@@ -1,0 +1,53 @@
+<tr #headerRow>
+
+    <th *ngFor="let column of columns; trackBy: acTableService.trackByField"
+        [attr.headers]="column.field"
+        [class.left]="column.stickyLeft"
+        [class.sortable-column]="column.headerSort || acTableComponent.sortingMap[column.field]"
+        [class.sortable-column-pointer]="column.headerSort"
+        #headerCell>
+
+        <div class="table-cell flexRowParent"
+             (click)="!column.disableSort && column.headerSort && onColumnSort(column)"
+             [style.width.px]="column.colWidth | acFunc : acTableService.getLimitedWidth : (column.minWidth || acTableComponent.minCellWidth)">
+
+            <div class="header-table-cell" *ngIf="column.title !== ''" acLabel #headerCell>
+                <ng-template [isHeader]="true"
+                             [acTableCell]="headerCell"
+                             [acTableCellTemplate]="defaultHeaderCellTemplate"
+                             [acTableCellFormatter]="column.titleFormatter"
+                             [acTableCellColumn]="column">
+                </ng-template>
+            </div>
+
+            <ac-search *ngIf="column.filter as columnFilter"
+                       class="flexItemRowEquals table-column-filter"
+                       [placeHolder]="columnFilter.placeholder"
+                       (click)="$event.stopPropagation()"
+                       (searchChange)="acTableComponent.onColumnFilterChanged($event, column)"
+            ></ac-search>
+
+            <span *ngIf="column.headerSort || acTableComponent.sortingMap[column.field]" class="sorter flexItem">
+                <div class="flexRowParent align-center">
+                    <span *ngIf="acTableComponent._sorting.length > 1"
+                          class="flexItemBiggest sorter-order">
+                        {{acTableComponent.sortingMap[column.field]?.order}}
+                    </span>
+                    <div class="sorter-arrows flexItem flexColumnParent">
+                        <span class="sorter-arrow asc"
+                              [class.active]="acTableComponent.sortingMap[column.field]?.dir === 'asc'"></span>
+                        <span class="sorter-arrow desc"
+                              [class.active]="acTableComponent.sortingMap[column.field]?.dir === 'desc'"></span>
+                    </div>
+                </div>
+            </span>
+        </div>
+        <span class="resize-handle"
+              *ngIf="column.isResizable"
+              [class.no-user-selection]="!!(acTableComponent.tableCellContextIndex | acFunc: acTableComponent.getTableCellContext) || !acTableComponent.userSelectState"
+        >
+        </span>
+    </th>
+</tr>
+
+<ng-template let-column="column" #defaultHeaderCellTemplate>{{column.title | uppercase}}</ng-template>

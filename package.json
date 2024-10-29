@@ -1,0 +1,14 @@
+{
+  "name": "ng-ac-table",
+  "version": "1.0.0",
+  "description": "Audiocodes table for angular",
+  "main": "index.js",
+  "repository": "https://github.com/audiocodes/ac-ng-table.git",
+  "author": "Nemoy <Michaeln@audiocodes.com>",
+  "contributors": [
+    "Nemoy <Michaeln@audiocodes.com>",
+    "Lalluz <Michaell@audiocodes.com>",
+    "Sananes <Stavsa@audiocodes.com>"
+  ],
+  "license": "MIT"
+}

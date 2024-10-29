@@ -1,0 +1,103 @@
+<div class="ac-table flexColumnParent"
+     [class.visibilityHidden]="!viewPortVisible"
+     [class.no-user-selection]="tableCellContextIndex >= 0"
+     [class.finishLoading]="!loading"
+     [attr.id]="tableId"
+     (wheel)="onWheelUpdateHorizontalScroller($event, horizontalScroller)"
+     [attr.tabindex]="0"
+     (focus)="toggleFocus(true)"
+     (blur)="toggleFocus(false)"
+     #tableContainer>
+
+    <div class="header-table flexItem" #headerContainer>
+        <table [class.visibilityHidden]="!isHeaderVisible || !initialized.closed"
+               [style.padding-right.px]="viewportScrollBarWidth | acFunc : acTableService.getLimitedWidth"
+               (mousedown)="tableMousedown($event)"
+               (dblclick)="dblClick($event, tbodyContainer, headerContainer)"
+               #headerTable>
+
+            <thead ac-table-header
+                   [class.rtl]="rtl"
+                   [columns]="_columns"
+                   (columnSort)="onColumnSort($event)"
+                   #acTableHeader></thead>
+        </table>
+    </div>
+
+    <div *ngIf="!loading && (!_rows || _rows.length === 0)" class="no-data-placeholder">
+        <ng-template *ngIf="noDataComponent else noDataTemplate" [ngComponentOutlet]="noDataComponent"></ng-template>
+    </div>
+
+    <cdk-virtual-scroll-viewport class="body-table virtual-scroll flexItemBiggest"
+                                 [itemSize]="itemSize"
+                                 [minBufferPx]="minBufferPx"
+                                 [maxBufferPx]="maxBufferPx"
+                                 [class.visibilityHidden]="!isHeaderVisible || !isBodyVisible"
+                                 (scrollend)="updateInfiniteScroll($event)">
+        <table (mousedown)="tableMousedown($event)"
+               (dblclick)="dblClick($event, tbodyContainer, headerContainer)">
+
+            <colgroup>
+                <col *ngFor="let column of _columns"
+                     [style.width.px]="column.colWidth | acFunc : acTableService.getLimitedWidth : (column.minWidth || minCellWidth)">
+            </colgroup>
+
+            <tbody ac-table-body
+                   [columns]="_columns"
+                   [rows]="_rows | acFunc : getViewPortRows: collapsedGroups: filters"
+                   [showBufferLoader]="bufferingInfiniteScroll"
+                   [templates]="{infiniteScrollBufferLoader: infiniteScrollBufferLoader}"
+                   #tbodyContainer
+            ></tbody>
+        </table>
+    </cdk-virtual-scroll-viewport>
+
+
+    <div class="flexItem horizontal-scroller"
+         (scroll)="updateHorizontalScroll($event, [headerContainer, vsElement, footerContainer])"
+         #horizontalScroller>
+        <div class="horizontal-scroller-item"
+             [style.width.px]="headerTable | acFunc : calcHorizontalScrollWidth: viewportScrollBarWidth : headerTableWidthChanges"
+        ></div>
+    </div>
+
+    <div class="footer-table flexItem" #footerContainer [hidden]="!footer">
+        <table *ngIf="footer" [style.padding-right.px]="viewportScrollBarWidth | acFunc : acTableService.getLimitedWidth">
+
+            <tfoot ac-table-footer [columns]="_columns"></tfoot>
+        </table>
+    </div>
+
+    <ac-pagination class="flexItem"
+                   *ngIf="paginator && !infiniteScroll"
+                   [class.rtl]="rtl"
+                   [pageIndex]="pageIndex"
+                   [pageSize]="pageSize"
+                   [itemsDisplayTemplate]="pageItemsDisplayTemplate"
+                   [itemsDisplayType]="itemsDisplayType"
+                   [pageSelector]="pageSelector"
+                   [totalElements]="totalElements"
+                   [pageSizeOptions]="pagingSizeOption"
+                   (pageIndexChange)="onPageChange($event)"
+                   (pageSizeChange)="onPageChange($event)">
+
+
+        <ng-template #postfixTemplate>
+            <ac-button class="small"
+                       buttonType="icon-button"
+                       (acClick)="openTableSettings()">
+                <ac-svg name="settings" [fillColor]="statusColors.primary"></ac-svg>
+            </ac-button>
+        </ng-template>
+    </ac-pagination>
+
+    <ac-progress [hidden]="!loading && (isHeaderVisible || isBodyVisible)"
+                 class="overlay-on-load background"
+                 [center]="true"
+    ></ac-progress>
+</div>
+
+<ng-template #noDataTemplate>
+    <ng-template [ngTemplateOutlet]="noDataPlaceholderContentTemplate || noDataDefaultTemplate"></ng-template>
+</ng-template>
+<ng-template #noDataDefaultTemplate>No data</ng-template>

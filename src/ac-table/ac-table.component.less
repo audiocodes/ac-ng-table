@@ -1,0 +1,90 @@
+@import "colors.less";
+
+:host {
+  width: 100%;
+  height: 100%;
+}
+
+.no-data-placeholder {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+:host(.rtl) {
+  direction: rtl;
+}
+
+.no-user-selection {
+  user-select: none;
+}
+
+.ac-table {
+  position: relative;
+  color: @text;
+
+  ac-pagination {
+    //border-top: 2px solid @systemBorder;
+  }
+}
+
+.header-table, .footer-table {
+  overflow: hidden;
+}
+
+.header-table {
+  border-bottom: 2px solid @systemBorder;
+
+  table {
+    border: none;
+  }
+}
+
+.footer-table {
+  margin-top: 1px;
+}
+
+
+.body-table {
+  overflow-x: hidden !important;
+
+  table {
+    width: 0;
+  }
+}
+
+.horizontal-scroller {
+  overflow: auto;
+
+  .horizontal-scroller-item {
+    height: 1px;
+  }
+}
+
+
+table {
+  table-layout: fixed;
+  border-collapse: separate;
+  height: 1px;
+  border-spacing: 0;
+
+  ::ng-deep {
+
+    td, th {
+      background: white;
+      padding: 0;
+    }
+  }
+
+  td:not(.left, .right), th {
+    position: relative;
+  }
+
+  .left {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+  }
+}
+
+

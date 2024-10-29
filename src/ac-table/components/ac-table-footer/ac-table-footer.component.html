@@ -1,0 +1,20 @@
+<tr>
+    <th *ngFor="let column of columns; trackBy: acTableService.trackByField"
+        [class.left]="column.stickyLeft"
+        acChild>
+
+        <div class="table-cell footer-table-cell"
+             [style.width.px]="column.colWidth | acFunc : acTableService.getLimitedWidth : (column.minWidth || acTableComponent.minCellWidth)"
+             acLabel
+             #footerCell>
+            <ng-template [acTableCell]="footerCell"
+                         [isHeader]="true"
+                         [acTableCellTemplate]="defaultFooterCellTemplate"
+                         [acTableCellFormatter]="column.footerFormatter"
+                         [acTableCellColumn]="column">
+            </ng-template>
+        </div>
+    </th>
+</tr>
+
+<ng-template let-column="column" #defaultFooterCellTemplate>{{column.title}}</ng-template>

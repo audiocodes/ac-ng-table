@@ -3,7 +3,7 @@ import {
     ChangeDetectorRef,
     Component,
     ComponentRef,
-    ContentChild,
+    ContentChild, DestroyRef,
     ElementRef,
     EventEmitter,
     HostListener,
@@ -20,8 +20,6 @@ import {
 import {DOCUMENT} from '@angular/common';
 
 import {Store} from '@ngxs/store';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
-import {AcPaging, AcPagingEvent} from '../ac-pagination/ac-paging.interface';
 import {
     AC_TABLE_CONFIG, AcTableCell,
     AcTableColumn,
@@ -35,32 +33,25 @@ import {
     ELayoutType,
     ESelectBehavior,
     RefreshTableProperties
-} from './models/ac-table.interface';
-import {AcTableActions} from './state/ac-table.actions';
+} from '../../models/ac-table.interface';
 
-import {AcTableState} from './state/ac-table.state';
-import {AcPaginationItemsTemplateType} from '../ac-pagination/ac-pagination.component';
-import {AC_TABLE_STATE_TOKEN, AcTableStateModels} from './state/ac-table-state.models';
-import {AcTableDataState} from './state/ac-table-data/ac-table-data.state';
-import {AcTableDataActions} from './state/ac-table-data/ac-table-data.actions';
-import {debounceTime} from 'rxjs/operators';
-import {fromEvent, Observable, Subject} from 'rxjs';
-import {ThrottleClass} from '../../utils/throttle.class';
-import {GeneralService} from '../../services/general.service';
-import {AcTabDirective} from '../ac-tabs/ac-tab.directive';
-import {AcTrackerService} from '../../services/utilities/ac-tracker.service';
-import {ArrayUtil} from '../../utils/array-util';
-import {StringUtils} from '../../utils/string-utils';
-import {AcDialogService} from '../ac-dialog/ac-dialog.service';
-import {AcCheckboxComponent} from '../ac-checkbox/ac-checkbox.component';
-import {AcSvgComponent} from '../ac-icons/ac-svg/ac-svg.component';
-import {AcTableSettingsDialogComponent} from './dialogs/ac-table-settings-dialog/ac-table-settings-dialog.component';
-import {AcTableService} from './services/ac-table.service';
-import {AcTableActionsService} from './services/ac-table-actions.service';
-import {AcTableExpandedRowDirective} from './directives/ac-table-expanded-row.directive';
 import {CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {AcTableExpandedRowDirective} from '../../directives/ac-table-expanded-row.directive';
+import {debounceTime, fromEvent, Observable, Subject} from 'rxjs';
+import {AcTableService} from '../../services/ac-table.service';
+import {AcTableActionsService} from '../../services/ac-table-actions.service';
+import {AcTableActions} from '../../state/ac-table.actions';
+import {ThrottleClass} from '../../../utils/throttle.class';
+import {AcTableState} from '../../state/ac-table.state';
+import {AC_TABLE_STATE_TOKEN, AcTableStateModels} from '../../state/ac-table-state.models';
+import {StringUtils} from '../../../utils/string-utils';
+import {AcTableDataActions} from '../../state/ac-table-data/ac-table-data.actions';
+import {AcTableDataState} from '../../state/ac-table-data/ac-table-data.state';
+import {AcPaging, AcPagingEvent} from '../../../utils/components/ac-pagination/ac-paging.interface';
+import {AcPaginationItemsTemplateType} from '../../../utils/components/ac-pagination/ac-pagination.component';
 
-@UntilDestroy()
+// @UntilDestroy()
 @Component({
     selector: 'ac-table',
     templateUrl: './ac-table.component.html',
@@ -155,7 +146,6 @@ export class AcTableComponent implements AcTableSharedInputs {
     customColumnsWidth = false;
     externalSelection: ThrottleClass;
 
-    statusColors = GeneralService.statusColors;
     activeColumns: AcTableColumn[];
     private originalClientX;
     private originalHeaderWidth;
@@ -163,27 +153,38 @@ export class AcTableComponent implements AcTableSharedInputs {
 
     constructor(public acTableService: AcTableService,
                 private acTableActionsService: AcTableActionsService,
-                private acDialogService: AcDialogService,
-                private acTrackerService: AcTrackerService,
                 protected cdRef: ChangeDetectorRef,
                 protected store: Store,
                 private zone: NgZone,
                 public injector: Injector,
+                private destroyRef: DestroyRef,
                 @Inject(DOCUMENT) private document: Document,
-                @Inject(AC_TABLE_CONFIG) protected forRootAcTableConfig: AcTableConfig,
-                @Optional() @SkipSelf() private acTabDirective: AcTabDirective) {
+                @Inject(AC_TABLE_CONFIG) protected forRootAcTableConfig: AcTableConfig) {
 
         this.externalSelection = new ThrottleClass({
             callback: (select, selection, candidateAnchor, update) => {
                 this.acTableActionsService.dispatch(new AcTableActions.Select(this.tableId, selection, candidateAnchor, update));
             },
-            destroyComponentOperator: untilDestroyed(this),
+            destroyComponentOperator: takeUntilDestroyed(this.destroyRef),
             debounce: this.acTableService.selectDebounceTime,
             maxRecurrentTime: this.acTableService.selectDebounceTime,
         });
 
-        GeneralService.updateGlobalConfig(this, forRootAcTableConfig);
+        AcTableComponent.updateGlobalConfig(this, forRootAcTableConfig);
     }
+
+    static updateGlobalConfig = (context, forRootConfig) => {
+        if (!forRootConfig) {
+            return;
+        }
+        Object.getOwnPropertyNames(forRootConfig)
+            .filter((configKey) => {
+                return forRootConfig[configKey] !== undefined;
+            })
+            .forEach((configKey) => {
+                context[configKey] = forRootConfig[configKey];
+            });
+    };
 
     get vsElement() {
         return this.vsComponent.elementRef?.nativeElement;
@@ -246,13 +247,13 @@ export class AcTableComponent implements AcTableSharedInputs {
     ngAfterViewInit() {
 
         this.initializeRefresh();
-        this.updateColumnsWidthSubject.pipe(untilDestroyed(this), debounceTime(200)).subscribe(() => this.dispatchColumnsWidth());
+        this.updateColumnsWidthSubject.pipe(takeUntilDestroyed(this.destroyRef), debounceTime(200)).subscribe(() => this.dispatchColumnsWidth());
 
         this.initializeStoreSnapshot();
         this.initializeStoreUpdated();
 
         this.store.select(AcTableDataState.rowsUpdated(this.tableId))
-            .pipe(untilDestroyed(this))
+            .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((rows) => {
                 rows && this.setRows(rows);
             });
@@ -261,12 +262,6 @@ export class AcTableComponent implements AcTableSharedInputs {
         // setTimeout(() => this.updateTableHeaderMargin(), 100);
 
         this._columns && this.initializeComplete();
-
-        this.trackResizeSubject.pipe(untilDestroyed(this), debounceTime(200)).subscribe({
-            next: ({field, title, colWidth}: AcTableColumn) => {
-                this.acTrackerService.trackEvent('Table Column Resize', this.tableId, title || field, colWidth);
-            }
-        });
     }
 
     ngOnDestroy() {
@@ -310,11 +305,11 @@ export class AcTableComponent implements AcTableSharedInputs {
     };
 
     initializeRefresh() {
-        this.refresh$?.pipe(untilDestroyed(this)).subscribe((tableProperties) => this.refreshTable(tableProperties));
+        this.refresh$?.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((tableProperties) => this.refreshTable(tableProperties));
     }
 
     initializeStoreUpdated() {
-        this.store.select(AcTableState.collapsedGroups(this.tableId)).pipe(untilDestroyed(this)).subscribe((collapsedGroups) => {
+        this.store.select(AcTableState.collapsedGroups(this.tableId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((collapsedGroups) => {
             if (!this.groupBy || !this.groupedRows) {
                 return;
             }
@@ -349,9 +344,9 @@ export class AcTableComponent implements AcTableSharedInputs {
             loadingState: !this._rows
         });
         this.initialized.unsubscribe();
-        queueMicrotask(() => {
-            GeneralService.dispatchResizeEvent();
-        })
+        // queueMicrotask(() => {
+        //     GeneralService.dispatchResizeEvent();
+        // });
     }
 
     initializeStoreSnapshot() {
@@ -475,7 +470,7 @@ export class AcTableComponent implements AcTableSharedInputs {
     initializeScrollPositionUpdate() {
         this.zone.runOutsideAngular(() => {
 
-            const scrollObservable = fromEvent(this.vsElement, 'scroll').pipe(untilDestroyed(this));
+            const scrollObservable = fromEvent(this.vsElement, 'scroll').pipe(takeUntilDestroyed(this.destroyRef));
 
             scrollObservable.pipe(debounceTime(200)).subscribe(({target}: Event) => {
                 this.acTableActionsService.dispatch(new AcTableActions.UpdateScrollPosition(this.tableId, {
@@ -483,7 +478,7 @@ export class AcTableComponent implements AcTableSharedInputs {
                 }));
             });
 
-            fromEvent(this.document, 'mousemove').pipe(untilDestroyed(this)).subscribe(this.tableMousemove);
+            fromEvent(this.document, 'mousemove').pipe(takeUntilDestroyed(this.destroyRef)).subscribe(this.tableMousemove);
         });
     }
 
@@ -825,23 +820,6 @@ export class AcTableComponent implements AcTableSharedInputs {
         this.executeSelection([rows[0]], {candidateAnchor: rows[0].id});
     };
 
-    openTableSettings() {
-        this.acDialogService.open(AcTableSettingsDialogComponent, {
-            submitButtonText: 'Save',
-            dialogData: {
-                tableId: this.tableId,
-                columns: this.activeColumns,
-                reset: () => {
-                    this.acTableActionsService.updateSettings(this.tableId, {columnVisibility: null});
-                    this.clearColumnWidth();
-                }
-            },
-            onSubmit: ({columnVisibility}) => {
-                this.acTableActionsService.updateSettings(this.tableId, {columnVisibility});
-            },
-        });
-    }
-
     toggleFocus(state: boolean) {
         this.isFocused = state;
     }
@@ -865,105 +843,109 @@ export class AcTableComponent implements AcTableSharedInputs {
         this.acTableActionsService.dispatch(new AcTableActions.UpdateScrollPosition(this.tableId, {}, false));
     }
 
-    protected getSelectionCheckboxColumn(activeColumns: Array<AcTableColumn>): AcTableColumn {
-        if (!this.selection) {
-            return;
-        }
-        return this.acTableService.createNativeColumn(this.tableId, activeColumns, {
-            field: `${this.tableId}_selection`,
-            width: 60,
-            cellClass: 'textAlignCenter ac-table-select-row-checkbox',
-            titleFormatter: ({viewContainerRef}: any) => {
-                return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcCheckboxComponent, {},
-                    (componentRef) => [
-                        this.store.select(AcTableState.selection(this.tableId, true, true)).subscribe((selection) => setTimeout(() => {
-                            const isAllSelected = this.isAllRowsSelected();
-                            componentRef.instance.acModel = !isAllSelected && (selection.length > 0) ? 'indeterminate' : isAllSelected;
-                            this.cdRef.detectChanges();
-                        })),
-                        fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
-                            $event.stopPropagation();
-                            $event.preventDefault();
-                            this.executeSelection(this._rows, {update: true, select: !this.isAllRowsSelected()});
-                        })
-                    ])
-            },
-            formatter: ({viewContainerRef, ...cell}: AcTableCell) => {
-                const {id} = cell.getTableRow();
-                return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcCheckboxComponent,
-                    {
-                        componentInputs: {acModel: !!this.selection[id], sideMargin: false},
-                    },
-                    (componentRef) => [
-                        fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
-                            $event.stopPropagation();
-                            $event.preventDefault();
-                            this.selectRow($event, cell.getTableRow(), {forceToggle: true});
-                        })
-                    ]);
-            },
-            onRowSelection: (selection, contentRef: ComponentRef<AcCheckboxComponent>) => {
-                if (!contentRef) {
-                    return;
-                }
-                contentRef.instance.acModel = selection;
-                this.cdRef.detectChanges();
-            }
-        });
-    }
+    // protected getSelectionCheckboxColumn(activeColumns: Array<AcTableColumn>): AcTableColumn | void {
+    //     if (!this.selection) {
+    //         return;
+    //     }
+    //     return this.acTableService.createNativeColumn(this.tableId, activeColumns, {
+    //         field: `${this.tableId}_selection`,
+    //         width: 60,
+    //         cellClass: 'textAlignCenter ac-table-select-row-checkbox',
+    //         titleFormatter: ({viewContainerRef}: any) => {
+    //             return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcCheckboxComponent, {},
+    //                 (componentRef) => [
+    //                     this.store.select(AcTableState.selection(this.tableId, true, true)).subscribe((selection) => setTimeout(() => {
+    //                         const isAllSelected = this.isAllRowsSelected();
+    //                         componentRef.instance.acModel = !isAllSelected && (selection.length > 0) ? 'indeterminate' : isAllSelected;
+    //                         this.cdRef.detectChanges();
+    //                     })),
+    //                     fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
+    //                         $event.stopPropagation();
+    //                         $event.preventDefault();
+    //                         this.executeSelection(this._rows, {update: true, select: !this.isAllRowsSelected()});
+    //                     })
+    //                 ])
+    //         },
+    //         formatter: ({viewContainerRef, ...cell}: AcTableCell) => {
+    //             const {id} = cell.getTableRow();
+    //             return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcCheckboxComponent,
+    //                 {
+    //                     componentInputs: {acModel: !!this.selection[id], sideMargin: false},
+    //                 },
+    //                 (componentRef) => [
+    //                     fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
+    //                         $event.stopPropagation();
+    //                         $event.preventDefault();
+    //                         this.selectRow($event, cell.getTableRow(), {forceToggle: true});
+    //                     })
+    //                 ]);
+    //         },
+    //         onRowSelection: (selection, contentRef: ComponentRef<AcCheckboxComponent>) => {
+    //             if (!contentRef) {
+    //                 return;
+    //             }
+    //             contentRef.instance.acModel = selection;
+    //             this.cdRef.detectChanges();
+    //         }
+    //     });
+    // }
 
-    protected getRowsExpansionColumn(activeColumns: Array<AcTableColumn>): AcTableColumn {
-        if (!this.expandableRows) {
-            return;
-        }
-        const initialRowExpansionState = this.store.selectSnapshot(AcTableState.rowsExpansion(this.tableId));
-        const setArrowDirection = (componentRef: ComponentRef<AcSvgComponent>, isRowExpanded: boolean) => {
-            if (!componentRef) {
-                return;
-            }
-            componentRef.instance.mirrorVer = isRowExpanded;
-            componentRef.instance.cdRef.detectChanges()
-        };
-        return this.acTableService.createNativeColumn(this.tableId, activeColumns, {
-            field: `${this.tableId}_expand`,
-            width: 20,
-            minWidth: 20,
-            cellClass: 'no-padding ac-table-expand-row',
-            formatter: ({viewContainerRef, ...cell}: AcTableCell) => {
-                const {id} = cell.getTableRow();
-                const isInitiallyExpanded = initialRowExpansionState[id];
-                return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcSvgComponent,
-                    {componentInputs: {name: 'chevron', rotate: 90, mirrorVer: isInitiallyExpanded}},
-                    (componentRef) => [
-                        this.store.select(AcTableState.rowsExpansion(this.tableId)).subscribe((rowsExpansion) => {
-                            setArrowDirection(componentRef, rowsExpansion[id]);
-                            this.cdRef.detectChanges();
-                        }),
-                        fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
-                            $event.stopPropagation();
-                            $event.preventDefault();
-
-                            const rowsExpansion = this.store.selectSnapshot(AcTableState.rowsExpansion(this.tableId));
-                            const isRowExpanded = !rowsExpansion[id];
-                            setArrowDirection(componentRef, isRowExpanded);
-                            this.acTableActionsService.dispatch(new AcTableActions.SetRowExpansion(this.tableId, {[id]: isRowExpanded}, this.multiExpandableRows));
-
-                            this.cdRef.detectChanges();
-                        })
-                    ]
-                )
-            },
-        });
-    }
+    // protected getRowsExpansionColumn(activeColumns: Array<AcTableColumn>): AcTableColumn {
+    //     if (!this.expandableRows) {
+    //         return;
+    //     }
+    //     const initialRowExpansionState = this.store.selectSnapshot(AcTableState.rowsExpansion(this.tableId));
+    //     const setArrowDirection = (componentRef: ComponentRef<AcSvgComponent>, isRowExpanded: boolean) => {
+    //         if (!componentRef) {
+    //             return;
+    //         }
+    //         componentRef.instance.mirrorVer = isRowExpanded;
+    //         componentRef.instance.cdRef.detectChanges()
+    //     };
+    //     return this.acTableService.createNativeColumn(this.tableId, activeColumns, {
+    //         field: `${this.tableId}_expand`,
+    //         width: 20,
+    //         minWidth: 20,
+    //         cellClass: 'no-padding ac-table-expand-row',
+    //         formatter: ({viewContainerRef, ...cell}: AcTableCell) => {
+    //             const {id} = cell.getTableRow();
+    //             const isInitiallyExpanded = initialRowExpansionState[id];
+    //             return this.acTableService.createNativeColumnFormatter(viewContainerRef, AcSvgComponent,
+    //                 {componentInputs: {name: 'chevron', rotate: 90, mirrorVer: isInitiallyExpanded}},
+    //                 (componentRef) => [
+    //                     this.store.select(AcTableState.rowsExpansion(this.tableId)).subscribe((rowsExpansion) => {
+    //                         setArrowDirection(componentRef, rowsExpansion[id]);
+    //                         this.cdRef.detectChanges();
+    //                     }),
+    //                     fromEvent(componentRef.location.nativeElement, 'click').subscribe(($event: any) => {
+    //                         $event.stopPropagation();
+    //                         $event.preventDefault();
+    //
+    //                         const rowsExpansion = this.store.selectSnapshot(AcTableState.rowsExpansion(this.tableId));
+    //                         const isRowExpanded = !rowsExpansion[id];
+    //                         setArrowDirection(componentRef, isRowExpanded);
+    //                         this.acTableActionsService.dispatch(new AcTableActions.SetRowExpansion(this.tableId, {[id]: isRowExpanded}, this.multiExpandableRows));
+    //
+    //                         this.cdRef.detectChanges();
+    //                     })
+    //                 ]
+    //             )
+    //         },
+    //     });
+    // }
 
     protected setColumns(columns: Array<AcTableColumn>) {
         if (!columns) {
             return;
         }
 
-        const expandColumn = this.getRowsExpansionColumn(this.activeColumns);
-        const selectionColumn = this.getSelectionCheckboxColumn(this.activeColumns);
-        columns = [selectionColumn, expandColumn, ...columns].filter((col) => !!col);
+        // const expandColumn = this.getRowsExpansionColumn(this.activeColumns);
+        // const selectionColumn = this.getSelectionCheckboxColumn(this.activeColumns);
+        columns = [
+            // selectionColumn,
+            // expandColumn,
+            ...columns
+        ].filter((col) => !!col);
         this.activeColumns = this.filterActiveColumns(columns).map((column) => ({
             // defaults
             widthGrow: (column.width || column.widthByHeader) ? 0 : (column.widthGrow || 1),
@@ -1076,9 +1058,10 @@ export class AcTableComponent implements AcTableSharedInputs {
         select = select || this.forceSelection;
 
         if (select || this.forceSelection) {
-            const selectionState = ArrayUtil.arrayToObject(selection, (acc, row) => {
+            const selectionState = selection.reduce((acc, row) => {
                 acc[row.id] = true;
-            });
+                return acc;
+            }, {});
             this.selection = update ? {...this.selection, ...selectionState} : selectionState;
         } else {
             selection.forEach((rowSelection) => delete this.selection[rowSelection.id]);

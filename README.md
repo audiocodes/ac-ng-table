@@ -1,1 +1,4 @@
-# ac-ng-table
+# ngx ac table [Under Construction]
+
+Audiocodes table for angular
+

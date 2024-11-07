@@ -20,12 +20,12 @@
                 </ng-template>
             </div>
 
-            <ac-search *ngIf="column.filter as columnFilter"
-                       class="flexItemRowEquals table-column-filter"
-                       [placeHolder]="columnFilter.placeholder"
-                       (click)="$event.stopPropagation()"
-                       (searchChange)="acTableComponent.onColumnFilterChanged($event, column)"
-            ></ac-search>
+<!-- // TODO: replace or remove functionality            <ac-search *ngIf="column.filter as columnFilter"-->
+<!--                       class="flexItemRowEquals table-column-filter"-->
+<!--                       [placeHolder]="columnFilter.placeholder"-->
+<!--                       (click)="$event.stopPropagation()"-->
+<!--                       (searchChange)="acTableComponent.onColumnFilterChanged($event, column)"-->
+<!--            ></ac-search>-->
 
             <span *ngIf="column.headerSort || acTableComponent.sortingMap[column.field]" class="sorter flexItem">
                 <div class="flexRowParent align-center">

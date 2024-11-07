@@ -1,14 +1,4 @@
-import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component, ContentChild,
-    EventEmitter,
-    Input,
-    Output,
-    TemplateRef,
-    ViewChild
-} from '@angular/core';
-import {GeneralService} from '../../services/general.service';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChild, EventEmitter, Input, Output, TemplateRef, ViewChild} from '@angular/core';
 import {AcPagingEvent} from './ac-paging.interface';
 
 export type AcPaginationItemsTemplateType = 'itemsRange' | 'itemsCount';
@@ -19,7 +9,7 @@ export type AcPaginationItemsTemplateType = 'itemsRange' | 'itemsCount';
     styleUrls: ['./ac-pagination.component.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AcPaginationComponent {
+export class AcPaginationComponent implements AfterViewInit {
 
     isFirstPage = true;
     isLastPage = true;
@@ -46,19 +36,25 @@ export class AcPaginationComponent {
     @Input() itemsDisplayType: AcPaginationItemsTemplateType = 'itemsRange';
     defaultItemsDisplayTemplate = {};
 
+    constructor(private cdRef: ChangeDetectorRef) {
+    }
+
     _pageSize = 25;
+
     @Input() set pageSize(pageSize) {
         this._pageSize = parseInt(pageSize, 10) || 25;
         this.updateIsLastPage();
     }
 
     _totalElements = 0;
+
     @Input() set totalElements(totalElements) {
         this._totalElements = parseInt(totalElements, 10) || 0;
         this.updateIsLastPage();
     }
 
     _pageIndex = 1;
+
     @Input() set pageIndex(index) {
         this._pageIndex = parseInt(index, 10) || 1;
         this.isFirstPage = this._pageIndex <= 1;
@@ -66,14 +62,12 @@ export class AcPaginationComponent {
     }
 
     _pageSizeOptions;
+
     @Input() set pageSizeOptions(options: number[] | boolean) {
         if (!options || typeof options === 'boolean') {
             return;
         }
         this._pageSizeOptions = options;
-    }
-
-    constructor(private cdRef: ChangeDetectorRef) {
     }
 
     ngAfterViewInit() {
@@ -95,7 +89,7 @@ export class AcPaginationComponent {
     };
 
     getButtonStateColor = (state) => {
-        return state ? GeneralService.statusColors.disabledDark : GeneralService.statusColors.text;
+        return state ? 'grey' : 'black';
     };
 
     onPageSizeChange(pageSize: string) {

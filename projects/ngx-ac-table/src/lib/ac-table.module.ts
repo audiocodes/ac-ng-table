@@ -14,6 +14,9 @@ import {AcTableExpandedRowDirective} from './directives/ac-table-expanded-row.di
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {AcFuncPipe} from '../utils/pipes/func.pipe';
 import {AcPaginationModule} from '../utils/components/ac-pagination/ac-pagination.module';
+import {AcLabelDirective} from '../utils/directives/ac-label.directive';
+import {ByStringPipe} from '../utils/pipes/by-string.pipe';
+import {PipesModule} from '../utils/pipes/pipes.module';
 
 @NgModule({
     imports: [
@@ -23,6 +26,7 @@ import {AcPaginationModule} from '../utils/components/ac-pagination/ac-paginatio
         ScrollingModule,
 
         AcPaginationModule,
+        PipesModule,
     ],
     declarations: [
         AcTableComponent,
@@ -33,7 +37,8 @@ import {AcPaginationModule} from '../utils/components/ac-pagination/ac-paginatio
         AcTableExpandedRowDirective,
         AcTableClientComponent,
         AcTableCursorComponent,
-        AcFuncPipe,
+        ByStringPipe,
+        AcLabelDirective,
     ],
     exports: [
         AcTableComponent,

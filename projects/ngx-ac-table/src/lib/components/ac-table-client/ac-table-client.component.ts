@@ -1,12 +1,10 @@
 import {ChangeDetectionStrategy, Component, forwardRef, Input,} from '@angular/core';
 
-import {UntilDestroy} from '@ngneat/until-destroy';
-import {AcTableComponent} from '../../ac-table.component';
 import {AcTableRow, AcTableSorters, SorterFunc} from '../../models/ac-table.interface';
-import {AcPagingEvent} from '../../../ac-pagination/ac-paging.interface';
-import {StringUtils} from '../../../../utils/string-utils';
+import {AcTableComponent} from '../ac-table/ac-table.component';
+import {AcPagingEvent} from '../../../utils/components/ac-pagination/ac-paging.interface';
+import {StringUtils} from '../../../utils/string-utils';
 
-@UntilDestroy()
 @Component({
     selector: 'ac-table-client',
     templateUrl: '../../ac-table.component.html',
@@ -21,7 +19,7 @@ export class AcTableClientComponent extends AcTableComponent {
 
     @Input() sorters: AcTableSorters;
 
-    ngOnInit() {
+    override ngOnInit() {
         this.sorters = {
             number: this.numberCompare,
             string: this.stringCompare,
@@ -31,23 +29,23 @@ export class AcTableClientComponent extends AcTableComponent {
         };
     }
 
-    ngAfterViewInit() {
+    override ngAfterViewInit() {
         super.ngAfterViewInit();
         this.viewInitialized = true;
         this._allRows && this.setRows([...this._allRows]);
     }
 
-    onPageChange(paging?: AcPagingEvent) {
+    override onPageChange(paging?: AcPagingEvent) {
         super.onPageChange(paging);
         this.setRows();
     }
 
-    onColumnSort(column: any) {
+    override onColumnSort(column: any) {
         super.onColumnSort(column);
         this.setRows();
     }
 
-    setRows(rows?: AcTableRow[]) {
+    override setRows(rows?: AcTableRow[]) {
         if (rows) {
             this._allRows = rows;
             this.totalElements = this._allRows?.length || 0;
@@ -74,7 +72,7 @@ export class AcTableClientComponent extends AcTableComponent {
         const sortedRows: AcTableRow[] = [...this._allRows];
         sortedRows.length > 0 && this._sorting.forEach((sorterState) => {
             const sorterType = typeof (StringUtils.byString(sortedRows[0].data, sorterState.field));
-            const sorter: SorterFunc = this.sorters[sorterState.sorter || sorterType] || this.sorters.string;
+            const sorter: SorterFunc = this.sorters[sorterState.sorter || sorterType] || this.sorters['string'];
 
             sorter && sortedRows.sort(({data: row1}, {data: row2}) => {
                 return sorter(StringUtils.byString(row1, sorterState.field), StringUtils.byString(row2, sorterState.field), sorterState.dir);
@@ -113,7 +111,7 @@ export class AcTableClientComponent extends AcTableComponent {
         return ((dir === 'asc' && isBigger) || (dir === 'desc' && !isBigger)) ? 1 : -1;
     };
 
-    private isGt = (ver1, ver2) => {
+    private isGt = (ver1: string, ver2: string) => {
         if (!ver1 || !ver2) {
             return false;
         }
@@ -132,5 +130,7 @@ export class AcTableClientComponent extends AcTableComponent {
                 return true;
             }
         }
+
+        return false;
     };
 }

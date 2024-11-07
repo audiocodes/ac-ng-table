@@ -1,7 +1,8 @@
 import {ChangeDetectorRef, ComponentRef, Directive, Input, SecurityContext, ViewContainerRef} from '@angular/core';
 import {DomSanitizer} from '@angular/platform-browser';
 import {AcTableCell, AcTableColumn} from '../models/ac-table.interface';
-import {StringUtils} from '../../../utils/string-utils';
+import {StringUtils} from '../../utils/string-utils';
+
 @Directive({
     selector: '[acTableCell]',
 })

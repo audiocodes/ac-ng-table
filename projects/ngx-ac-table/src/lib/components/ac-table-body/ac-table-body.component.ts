@@ -1,19 +1,17 @@
-import {ChangeDetectionStrategy, Component, ElementRef, HostBinding, HostListener, Input, QueryList, TemplateRef, ViewChild, ViewChildren} from '@angular/core';
-import {UntilDestroy, untilDestroyed} from '@ngneat/until-destroy';
+import {AfterViewInit, Component, DestroyRef, ElementRef, HostBinding, HostListener, Input, QueryList, TemplateRef, ViewChildren} from '@angular/core';
 import {AcTableColumn, AcTableRow} from '../../models/ac-table.interface';
-import {GeneralService} from '../../../../services/general.service';
-import {AcTableComponent} from '../../ac-table.component';
 import {AcTableService} from '../../services/ac-table.service';
 import {Store} from '@ngxs/store';
 import {AcTableState} from '../../state/ac-table.state';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {AcTableComponent} from '../ac-table/ac-table.component';
 
-@UntilDestroy()
 @Component({
     selector: '[ac-table-body]',
     templateUrl: './ac-table-body.component.html',
     styleUrls: ['./ac-table-body.component.less'],
 })
-export class AcTableBodyComponent {
+export class AcTableBodyComponent implements AfterViewInit {
     // @ts-ignore
 
     @ViewChildren('rowsElementsRef') rowsElementsRef: QueryList<ElementRef>;
@@ -21,7 +19,6 @@ export class AcTableBodyComponent {
     @Input() rows: AcTableRow[];
     @Input() showBufferLoader = false;
     @Input() templates: { [key: string]: TemplateRef<any> } = {};
-    public generalService = GeneralService;
 
     @HostBinding('class.no-user-selection') isUserSelecting = false;
     rowsExpansion;
@@ -29,8 +26,9 @@ export class AcTableBodyComponent {
 
     constructor(public acTableComponent: AcTableComponent,
                 public acTableService: AcTableService,
+                private destroyRef: DestroyRef,
                 private store: Store) {
-        this.store.select(AcTableState.rowsExpansion(this.acTableComponent.tableId)).pipe(untilDestroyed(this)).subscribe((rowsExpansion) => {
+        this.store.select(AcTableState.rowsExpansion(this.acTableComponent.tableId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((rowsExpansion) => {
             this.rowsExpansion = rowsExpansion;
         });
     }
@@ -100,6 +98,10 @@ export class AcTableBodyComponent {
         }
     }
 
+    TrackById = (index: number) => {
+        return this.rows[index].id;
+    }
+
     private selectNextRow($event: KeyboardEvent) {
 
         const rows = this.acTableComponent._rows;
@@ -126,7 +128,7 @@ export class AcTableBodyComponent {
                 const rowsOutOfBottomViewport = rowIndex - this.startIndex - rowsInViewPort;
 
                 const firstItemSize = topScrollOffset > 0 ? 0 : itemSize
-                this.acTableComponent.vsComponent.scrollToOffset(topScrollOffset  + firstItemSize + (rowsOutOfBottomViewport * itemSize) + lastItemSizeOutOfViewport + 1);
+                this.acTableComponent.vsComponent.scrollToOffset(topScrollOffset + firstItemSize + (rowsOutOfBottomViewport * itemSize) + lastItemSizeOutOfViewport + 1);
             }
         }
     }
@@ -147,9 +149,5 @@ export class AcTableBodyComponent {
                 break;
         }
         return rowIndex;
-    }
-
-    TrackById = (index: number) => {
-        return this.rows[index].id;
     }
 }

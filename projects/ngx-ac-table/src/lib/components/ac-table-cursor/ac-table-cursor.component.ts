@@ -1,13 +1,12 @@
 import {ChangeDetectionStrategy, Component, forwardRef, Input, ViewChild,} from '@angular/core';
 
-import {UntilDestroy} from '@ngneat/until-destroy';
-import {cloneDeep} from 'lodash';
-import {AcTableComponent} from '../../ac-table.component';
-import {AcPaginationComponent} from '../../../ac-pagination/ac-pagination.component';
+// import {cloneDeep} from 'lodash';
 import {AcTableActions} from '../../state/ac-table.actions';
 import {AcTableState} from '../../state/ac-table.state';
 import {AC_TABLE_STATE_TOKEN} from '../../state/ac-table-state.models';
-import {AcPagingEvent} from '../../../ac-pagination/ac-paging.interface';
+import {AcTableComponent} from '../ac-table/ac-table.component';
+import {AcPaginationComponent} from '../../../utils/components/ac-pagination/ac-pagination.component';
+import {AcPagingEvent} from '../../../utils/components/ac-pagination/ac-paging.interface';
 
 export interface AcTableCursor {
     [key: string]: any;
@@ -16,7 +15,6 @@ export interface AcTableCursor {
     before?: string;
 }
 
-@UntilDestroy()
 @Component({
     selector: 'ac-table-cursor',
     templateUrl: '../../ac-table.component.html',
@@ -28,7 +26,7 @@ export class AcTableCursorComponent extends AcTableComponent {
 
     @ViewChild(AcPaginationComponent, {static: false}) acPagination: AcPaginationComponent;
 
-    setRows(rows) {
+    override setRows(rows) {
         this.totalElements = rows?.length || 0;
         super.setRows(rows);
     }
@@ -44,7 +42,7 @@ export class AcTableCursorComponent extends AcTableComponent {
         this.acPagination.update();
     }
 
-    ngAfterViewInit() {
+    override ngAfterViewInit() {
         this.acPagination.showLast = false;
         this.acPagination.pagePicker = false;
         this.acPagination.updateLastPage = false;
@@ -53,14 +51,14 @@ export class AcTableCursorComponent extends AcTableComponent {
 
         const tableState = this.store.selectSnapshot<AcTableState>(AC_TABLE_STATE_TOKEN)[this.tableId];
         if (tableState?.cursor) {
-            this._cursor = cloneDeep(tableState.cursor);
+            // this._cursor = cloneDeep(tableState.cursor); // TODO: install or replace lodash
         }
 
         super.ngAfterViewInit();
     }
 
 
-    onPageChange(paging?: AcPagingEvent) {
+    override onPageChange(paging?: AcPagingEvent) {
         this.acPagination.isLastPage = true;
         const prevPageIndex = this.pageIndex;
         super.onPageChange(paging, false);
@@ -70,7 +68,7 @@ export class AcTableCursorComponent extends AcTableComponent {
         this.dispatchPaging(this.getPaging());
     }
 
-    dispatchAcTableEvent({...args}: any) {
+    override dispatchAcTableEvent({...args}: any) {
         super.dispatchAcTableEvent( {
             ...args,
             additionalData: this._cursor.current ? {cursor: this._cursor.current} : undefined

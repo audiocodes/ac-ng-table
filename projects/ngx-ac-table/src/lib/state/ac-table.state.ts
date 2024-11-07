@@ -5,7 +5,6 @@ import {cloneDeep} from 'lodash';
 import {AcTableActions} from './ac-table.actions';
 import {AC_TABLE_STATE_DEFAULTS, AC_TABLE_STATE_TOKEN, AcTableStateModels} from './ac-table-state.models';
 import {AcTableDataState} from './ac-table-data/ac-table-data.state';
-import {ArrayUtil} from '../../../utils/array-util';
 import {AcTableCursor} from '../components/ac-table-cursor/ac-table-cursor.component';
 
 @State({
@@ -30,11 +29,16 @@ export class AcTableState {
     }
 
     static getTableSelection = (selection: any, rowsState) => {
-        return ArrayUtil.arrayToObject(selection && rowsState, (acc, curr) => {
-            if (selection[curr.id]) {
-                acc[curr.id] = curr.data;
+        return selection && rowsState.reduce((acc,  row) => {
+            if (selection[row.id]) {
+                acc[row.id] = row.data;
             }
-        });
+        }, {});
+        // return ArrayUtil.arrayToObject(selection && rowsState, (acc, curr) => {// TODO: Check if right
+        //     if (selection[curr.id]) {
+        //         acc[curr.id] = curr.data;
+        //     }
+        // });
     };
 
     static rowsExpansion(tableId) {
@@ -81,9 +85,12 @@ export class AcTableState {
         const state = this.getStateByTableId(ctx, tableId);
 
         if (Array.isArray(selection)) {
-            selection = ArrayUtil.arrayToObject(selection, (selectionAcc, selectionCurr) => {
-                selectionAcc[selectionCurr.id] = true;
-            });
+            selection = selection.reduce((acc, selected) => {
+                acc[selected.id] = true;
+            }, {});
+            // ArrayUtil.arrayToObject(selection, (selectionAcc, selectionCurr) => { // TODO: Check if right
+            //     selectionAcc[selectionCurr.id] = true;
+            // });
         }
 
         if (Object.keys(selection).length === 0) {
@@ -130,7 +137,14 @@ export class AcTableState {
         let rowsExpansionState = {}
         if (isExpanded) {
             const rows = this.store.selectSnapshot(AcTableDataState.createMemoizedSelector(tableId));
-            rowsExpansionState = ArrayUtil.arrayValuesToObjectMap(rows, 'id', true);
+            // rowsExpansionState = ArrayUtil.arrayValuesToObjectMap(rows, 'id', true); // TODO: Check if right
+            rows.reduce((acc, row) => {
+                if (row && !Array.isArray(row) && typeof row === 'object') {
+                    acc[row['id']] = true;
+                } else {
+                    acc[row] = true;
+                }
+            });
         }
 
         this.patchSubStateByTableId(ctx, tableId, {rowsExpansion: rowsExpansionState});

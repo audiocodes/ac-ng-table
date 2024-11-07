@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Store} from '@ngxs/store';
 import {AcTableActions} from '../state/ac-table.actions';
-import {SessionStorageService} from '../../../services/session-storage.service';
 import {AcTableState} from '../state/ac-table.state';
 import {AC_TABLE_STATE_TOKEN} from '../state/ac-table-state.models';
 
@@ -34,7 +33,7 @@ export class AcTableActionsService {
 
     dispatch = (action) => {
         this.store.dispatch(action)
-        SessionStorageService.notify();
+        // SessionStorageService.notify(); // TODO: Session Storage Service
     };
     clearColumnsWidth = (tableId: string) => {
         this.store.dispatch(new AcTableActions.ClearColumnsWidth(tableId));

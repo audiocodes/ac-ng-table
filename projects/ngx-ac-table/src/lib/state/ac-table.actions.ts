@@ -1,7 +1,8 @@
-import {AcPaging} from '../../ac-pagination/ac-paging.interface';
+
 import {AcTableStateModels} from './ac-table-state.models';
 import {AcTableCursor} from '../components/ac-table-cursor/ac-table-cursor.component';
 import {AcTableScrollPosition, AcTableSorter} from '../models/ac-table.interface';
+import {AcPaging} from '../../utils/components/ac-pagination/ac-paging.interface';
 
 export namespace AcTableActions {
 

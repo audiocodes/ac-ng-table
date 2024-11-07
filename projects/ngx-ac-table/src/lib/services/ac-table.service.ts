@@ -1,6 +1,5 @@
 import {ComponentRef, Injectable, RendererFactory2, Type, ViewContainerRef} from '@angular/core';
-import {GeneralService} from '../../../services/general.service';
-import {AcTableCell, AcTableColumn, AcTableRow} from '../models/ac-table.interface';
+import {AcTableColumn, AcTableRow} from '../models/ac-table.interface';
 import {Subscription} from 'rxjs';
 
 export type ComponentInputs<T> = { [key: string]: any } | T;
@@ -27,7 +26,8 @@ export class AcTableService {
     }
 
     get selectDebounceTime() {
-        return GeneralService.testMode ? this.NO_DEBOUNCE : this.SELECT_DEBOUNCE_TIME;
+        // return GeneralService.testMode ? this.NO_DEBOUNCE : this.SELECT_DEBOUNCE_TIME; // TODO: General Service
+        return this.SELECT_DEBOUNCE_TIME;
     }
 
     trackById = (index: number, row) => row.id;
@@ -55,7 +55,7 @@ export class AcTableService {
 
     createNativeColumn = (tableId: string, activeColumns: Array<AcTableColumn>, columnProps: AcTableColumn): AcTableColumn => {
         if (activeColumns?.find((activeColumn) => activeColumn?.field === columnProps.field)) {
-            return;
+            return null;
         }
 
         return {

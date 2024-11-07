@@ -1,11 +1,8 @@
 import {Component, Inject, Input} from '@angular/core';
-import {UntilDestroy} from '@ngneat/until-destroy';
 import {AC_TABLE_CONFIG, AcTableColumn, AcTableConfig} from '../../models/ac-table.interface';
-import {AcTableComponent} from '../../ac-table.component';
 import {AcTableService} from '../../services/ac-table.service';
+import {AcTableComponent} from '../ac-table/ac-table.component';
 
-
-@UntilDestroy()
 @Component({
     selector: '[ac-table-footer]',
     templateUrl: './ac-table-footer.component.html',

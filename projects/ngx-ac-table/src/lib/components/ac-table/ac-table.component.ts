@@ -1,18 +1,18 @@
 import {
+    AfterViewInit,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
-    ComponentRef,
-    ContentChild, DestroyRef,
+    ContentChild,
+    DestroyRef,
     ElementRef,
     EventEmitter,
     HostListener,
-    Inject, Injector,
+    Inject,
+    Injector,
     Input,
-    NgZone,
-    Optional,
+    NgZone, OnInit,
     Output,
-    SkipSelf,
     TemplateRef,
     Type,
     ViewChild
@@ -21,7 +21,7 @@ import {DOCUMENT} from '@angular/common';
 
 import {Store} from '@ngxs/store';
 import {
-    AC_TABLE_CONFIG, AcTableCell,
+    AC_TABLE_CONFIG,
     AcTableColumn,
     AcTableConfig,
     AcTableDispatchEvent,
@@ -61,7 +61,7 @@ import {AcPaginationItemsTemplateType} from '../../../utils/components/ac-pagina
         '[class.rtl]': 'rtl'
     }
 })
-export class AcTableComponent implements AcTableSharedInputs {
+export class AcTableComponent implements AcTableSharedInputs, OnInit, AfterViewInit {
     static readonly AC_TABLE_STATE_AND_CONFIGS = 'tableState';
     @ContentChild(AcTableExpandedRowDirective, {static: true}) acTableExpandedRowDirective: AcTableExpandedRowDirective;
     @ContentChild('noDataPlaceholder') noDataPlaceholderContentTemplate: TemplateRef<any>;

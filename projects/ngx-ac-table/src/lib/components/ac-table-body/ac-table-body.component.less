@@ -1,8 +1,8 @@
-@import "colors.less";
+//@import "colors.less"; // TODO: less colors
 
-@ac-table-row-selected-background: @selected;
-@ac-table-row-hover-background: @lightBG;
-@ac-table-row-border-color: @lightBG;
+//@ac-table-row-selected-background: @selected;
+//@ac-table-row-hover-background: @lightBG;
+//@ac-table-row-border-color: @lightBG;
 
 :host {
   line-height: 140%;
@@ -14,7 +14,7 @@ tr.body-table-row, tr.expanded-row {
   height: 50px;
 
   &:has(+ .body-table-row) > td {
-    border-bottom: 2px solid @ac-table-row-border-color;
+    //border-bottom: 2px solid @ac-table-row-border-color; // TODO: less colors
 
     &:first-child {
       position: relative;
@@ -23,11 +23,11 @@ tr.body-table-row, tr.expanded-row {
 
   &:hover {
     td {
-      background: @ac-table-row-hover-background;
+      //background: @ac-table-row-hover-background; // TODO: less colors
     }
 
     &:not(.expanded-row) > :first-child::before {
-      .row-indicator(rgba(@gray, 0.54));
+      //.row-indicator(rgba(@gray, 0.54)); // TODO: less colors
     }
   }
 
@@ -35,25 +35,25 @@ tr.body-table-row, tr.expanded-row {
     position: relative;
 
     td {
-      background-color: @ac-table-row-selected-background;
+      //background-color: @ac-table-row-selected-background; // TODO: less colors
     }
 
 
     &:not(.expanded-row) > :first-child::before {
-      .row-indicator(@primary);
+      //.row-indicator(@primary); // TODO: less colors
     }
   }
 }
 
-.row-indicator (@color) {
-  content: "";
-  position: absolute;
-  background: @color;
-  width: 3px;
-  height: 100%;
-  z-index: 1;
-  top: 0;
-}
+//.row-indicator (@color) { // TODO: less colors
+//  content: "";
+//  position: absolute;
+//  background: @color;
+//  width: 3px;
+//  height: 100%;
+//  z-index: 1;
+//  top: 0;
+//}
 
 .body-table-cell {
   padding: 0 10px;
@@ -64,17 +64,17 @@ tr.body-table-row, tr.expanded-row {
 }
 
 
-.group {
-  border-bottom: 1px solid @systemBorderDark !important;
-  border-top: 1px solid @systemBorderDark !important;
-  border-right: 1px solid @systemBorderDark !important;
-  font-weight: bold;
-  background-color: @systemBorder !important;
-
-  &:hover {
-    background-color: @hover !important;
-  }
-}
+//.group { // TODO: less colors
+//  border-bottom: 1px solid @systemBorderDark !important;
+//  border-top: 1px solid @systemBorderDark !important;
+//  border-right: 1px solid @systemBorderDark !important;
+//  font-weight: bold;
+//  background-color: @systemBorder !important;
+//
+//  &:hover {
+//    background-color: @hover !important;
+//  }
+//}
 
 .group-collapse {
   display: inline-block;

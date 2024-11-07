@@ -63,6 +63,6 @@
 </ng-template>
 
 <ng-template let-row="row" #groupCellTemplate>
-    <ac-svg class="group-collapse" name="expander" [rotate]="row.isCollapsed ? 0 : 45"></ac-svg>
+<!--    <ac-svg class="group-collapse" name="expander" [rotate]="row.isCollapsed ? 0 : 45"></ac-svg> TODO: icons -->
     {{ row._groupId + ' (' + acTableComponent.groupedRows[row._groupId]?.length + ' items)' }}
 </ng-template>

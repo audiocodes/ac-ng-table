@@ -1,5 +1,5 @@
 import {ComponentRef, EventEmitter, InjectionToken, TemplateRef, Type, ViewContainerRef} from "@angular/core";
-import {AcPaging, AcPagingEvent} from '../../ac-pagination/ac-paging.interface';
+import {AcPaging, AcPagingEvent} from '../../utils/components/ac-pagination/ac-paging.interface';
 
 export interface AcTableSharedInputs {
     idField: string;

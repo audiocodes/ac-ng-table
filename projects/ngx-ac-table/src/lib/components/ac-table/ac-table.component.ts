@@ -51,7 +51,7 @@ import {AcTableDataState} from '../../state/ac-table-data/ac-table-data.state';
 import {AcPaging, AcPagingEvent} from '../../../utils/components/ac-pagination/ac-paging.interface';
 import {AcPaginationItemsTemplateType} from '../../../utils/components/ac-pagination/ac-pagination.component';
 
-// @UntilDestroy()
+
 @Component({
     selector: 'ac-table',
     templateUrl: './ac-table.component.html',
@@ -190,7 +190,7 @@ export class AcTableComponent implements AcTableSharedInputs, OnInit, AfterViewI
         return this.vsComponent.elementRef?.nativeElement;
     }
 
-    _columns: AcTableColumn[];
+    _columns:  Array<AcTableColumn>;
 
     @Input() set columns(columns: Array<AcTableColumn>) {
         this.setColumns(columns);

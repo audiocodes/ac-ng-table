@@ -65,7 +65,7 @@ export class AcLabelDirective {
     };
 
     private getParent(parentSelector: string, parentElement) {
-        return;
+        return parentElement;
         // return parentSelector ? $(this.hostElement.nativeElement).parents(parentSelector)[0] : parentElement;  // TODO: replace jquery
     }
 }

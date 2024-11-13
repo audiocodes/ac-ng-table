@@ -7,8 +7,8 @@ import {StringUtils} from '../../../utils/string-utils';
 
 @Component({
     selector: 'ac-table-client',
-    templateUrl: '../../ac-table.component.html',
-    styleUrls: ['../../ac-table.component.less'],
+    templateUrl: '../ac-table/ac-table.component.html',
+    styleUrls: ['../ac-table/ac-table.component.less'],
     providers: [{provide: AcTableComponent, useExisting: forwardRef(() => AcTableClientComponent)}],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

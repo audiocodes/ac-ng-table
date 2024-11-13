@@ -3,6 +3,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "strict": false,
     "noImplicitOverride": true,
@@ -13,8 +14,9 @@
     "isolatedModules": true,
     "paths": {
       "ngx-ac-table": [
-        "./dist/ngx-ac-table"
-      ]
+        "projects/ngx-ac-table/*",
+        "projects/ngx-ac-table"
+      ],
     },
     "esModuleInterop": true,
     "sourceMap": true,

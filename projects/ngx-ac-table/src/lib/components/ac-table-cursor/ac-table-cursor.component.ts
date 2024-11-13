@@ -17,8 +17,8 @@ export interface AcTableCursor {
 
 @Component({
     selector: 'ac-table-cursor',
-    templateUrl: '../../ac-table.component.html',
-    styleUrls: ['../../ac-table.component.less'],
+    templateUrl: '../ac-table/ac-table.component.html',
+    styleUrls: ['../ac-table/ac-table.component.less'],
     providers: [{provide: AcTableComponent, useExisting: forwardRef(() => AcTableCursorComponent)}],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

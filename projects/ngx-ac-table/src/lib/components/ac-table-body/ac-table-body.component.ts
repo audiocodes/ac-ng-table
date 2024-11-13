@@ -18,7 +18,7 @@ export class AcTableBodyComponent implements AfterViewInit {
     @Input() columns: AcTableColumn[];
     @Input() rows: AcTableRow[];
     @Input() showBufferLoader = false;
-    @Input() templates: { [key: string]: TemplateRef<any> } = {};
+    @Input() templates: { [key: string]: TemplateRef<any>, infiniteScrollBufferLoader?: TemplateRef<any> } = {};
 
     @HostBinding('class.no-user-selection') isUserSelecting = false;
     rowsExpansion;

@@ -1,4 +1,4 @@
-@import "colors.less";
+//@import "colors.less";
 
 :host(.rtl) {
   .resize-handle {
@@ -19,7 +19,7 @@ th {
   position: relative;
 
   white-space: nowrap;
-  color: @textSecondary;
+  //color: @textSecondary; // TODO: Replace less import
 
   .table-cell {
     height: 100%;
@@ -61,7 +61,7 @@ th {
   }
   &:hover {
     .resize-handle {
-      background-color: @systemBorder;
+      //background-color: @systemBorder; // TODO: Replace less import
     }
   }
 }
@@ -80,17 +80,17 @@ th {
     border-right: 4px solid transparent;
 
     &.asc {
-      border-bottom: 6px solid @disabledDark;
+      //border-bottom: 6px solid @disabledDark; // TODO: Replace less import
       margin-bottom: 3px;
       &.active {
-        border-bottom-color: @primary;
+        //border-bottom-color: @primary; // TODO: Replace less import
       }
     }
 
     &.desc {
-      border-top: 6px solid @disabledDark;
+      //border-top: 6px solid @disabledDark; // TODO: Replace less import
       &.active {
-        border-top-color: @primary;
+        //border-top-color: @primary; // TODO: Replace less import
       }
     }
   }

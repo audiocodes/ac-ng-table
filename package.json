@@ -13,7 +13,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve examples",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

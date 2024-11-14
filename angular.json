@@ -65,7 +65,8 @@
               }
             ],
             "styles": [
-              "projects/examples/src/styles.scss"
+              "projects/examples/src/styles.scss",
+              "projects/ngx-ac-table/src/utils/styles/styles.less"
             ],
             "scripts": []
           },
